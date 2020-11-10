@@ -1,6 +1,7 @@
 import getmac
 import vscp
 import vscphelper
+import paho.mqtt.client as mqtt
 
 def getGUID(id):
   return 'FF:FF:FF:FF:FF:FF:FF:FE:' + \
