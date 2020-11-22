@@ -1,5 +1,5 @@
-################################################################################
-# vscp-bme680.py
+###############################################################################
+# mqtt-bme680.py
 #
 # This file is part of the VSCP (http://www.vscp.org)
 #
@@ -29,10 +29,12 @@ import sys
 import configparser
 import getopt
 
+#import getmac
 import vscp
 import vscp_class as vc
 import vscp_type as vt
 import vscphelper
+import paho.mqtt.client as mqtt
 
 import time
 
@@ -47,7 +49,7 @@ if not bDebug :
     import adafruit_bme680
 
 def usage():
-    print("usage: vscp-bm680.py -v -c <pat-to-config-file> -h ")
+    print("usage: mqtt-bm680.py -v -c <pat-to-config-file> -h ")
     print("---------------------------------------------")
     print("-h/--help    - This text.")
     print("-v/--verbose - Print output also to screen.")
@@ -63,6 +65,8 @@ def initEvent(ex,id,vscpClass,vscpType):
     ex.vscpclass = vscpClass
     ex.vscptype = vscpType
 
+# def getFloatByteArray :
+#     return bytearray(struct.pack("f", value))  
 
 # Create library object using our Bus I2C port
 if not bDebug :
@@ -74,6 +78,7 @@ if not bDebug :
 #   spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 #   bme_cs = digitalio.DigitalInOut(board.D10)
 #   bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
+
 
 # ----------------------------------------------------------------------------
 #                              C O N F I G U R E
@@ -92,11 +97,14 @@ temp_corr = 2.30
 # Height at installation  location
 height_at_location = 412.0
 
-# Server and port
-host="192.168.1.7:9598"
+# MQTT broker
+host="192.168.1.7"
+
+# MQTT broker port
+port=1883
 
 # Username to login at server
-user="admin"
+user="vscp"
 
 # Password to login at server
 password="secret"
@@ -126,7 +134,7 @@ id_gas = 5
 id_altitude = 6
 
 # Configuration will be read from path set here
-cfgpath=""  
+config=""   
 
 # ----------------------------------------------------------------------------
 
@@ -147,133 +155,37 @@ for opt, arg in opts:
     elif opt in ("-v", "--verbose"):
         bverbose = True
     elif opt in ("-c", "--config"):
-        cfgpath = arg
+        config = arg
 
 # read config file if one is specified
+if (len(config)):
+    config.read(config)
 
-if (len(cfgpath)):
-    init = config.read(cfgpath)
-    if 'bVerbose' in config['GENERAL']:
-        bVerbose = config['GENERAL']['bVerbose']
-        print('Verbose mode enabled.')
-    if 'host' in config['VSCP']:        
-        host = config['VSCP']['host']
-        if bVerbose:
-            print("host =", host)
-    if 'user' in config['VSCP']:        
-        user = config['VSCP']['user']
-        if bVerbose:
-            print("user =", user)
-    if 'password' in config['VSCP']:        
-        password = config['VSCP']['password']
-        if bVerbose:
-            print("password =", "***********")
+# define message callback
+def on_message(client, userdata, msg):
+    print(msg.topic+" "+str(msg.payload))
 
-    if 'sensorindex_temperature' in config['VSCP']:        
-        sensorindex_temperature = int(config['VSCP']['sensorindex_temperature'])
-        if bVerbose:
-            print("sensorindex_temperature =", sensorindex_temperature)
+# define connect callback
+def on_connect(client, userdata, flags, rc):
+    print("Connected =",str(rc))
 
-    if 'sensorindex_humidity' in config['VSCP']:        
-        sensorindex_humidity = int(config['VSCP']['sensorindex_humidity'])
-        if bVerbose:
-            print("sensorindex_humidity =", sensorindex_humidity)
     
-    if 'sensorindex_pressure' in config['VSCP']:        
-        sensorindex_pressure = int(config['VSCP']['sensorindex_pressure'])
-        if bVerbose:
-            print("sensorindex_pressure =", sensorindex_pressure)
-    
-    if 'sensorindex_pressure_adj' in config['VSCP']:        
-        sensorindex_pressure_adj = int(config['VSCP']['sensorindex_pressure_adj'])
-        if bVerbose:
-            print("sensorindex_pressure_adj =", sensorindex_pressure_adj)
-    
-    if 'sensorindex_gas' in config['VSCP']:        
-        sensorindex_gas = int(config['VSCP']['sensorindex_gas'])
-        if bVerbose:
-            print("sensorindex_gas =", sensorindex_gas)
-    
-    if 'sensorindex_altitude' in config['VSCP']:        
-        sensorindex_altitude = int(config['VSCP']['sensorindex_altitude'])
-        if bVerbose:
-            print("sensorindex_altitude =", sensorindex_altitude)
 
-    if 'zone' in config['VSCP']:        
-        zone = int(config['VSCP']['zone'])
-        if bVerbose:
-            print("zone =", zone)
+client= mqtt.Client()
 
-    if 'subzone' in config['VSCP']:        
-        subzone = int(config['VSCP']['subzone'])
-        if bVerbose:
-            print("subzone =", subzone)
-    
-    if 'id_temperature' in config['VSCP']:        
-        id_temperature = int(config['VSCP']['id_temperature'])
-        if bVerbose:
-            print("id_temperature =", id_temperature)
-    
-    if 'id_humidity' in config['VSCP']:        
-        id_humidity = int(config['VSCP']['id_humidity'])
-        if bVerbose:
-            print("id_humidity =", id_humidity)
-    
-    if 'id_pressure' in config['VSCP']:        
-        id_pressure = int(config['VSCP']['id_pressure'])
-        if bVerbose:
-            print("id_pressure =", id_pressure)
-    
-    if 'id_pressure_adj' in config['VSCP']:        
-        id_pressure_adj = int(config['VSCP']['id_pressure_adj'])
-        if bVerbose:
-            print("id_pressure_adj =", id_pressure_adj)
-    
-    if 'id_gas' in config['VSCP']:        
-        id_gas = int(config['VSCP']['id_gas'])
-        if bVerbose:
-            print("id_gas =", id_gas)
-    
-    if 'id_altitude' in config['VSCP']:        
-        id_altitude = int(config['VSCP']['id_altitude'])
-        if bVerbose:
-            print("id_altitude =", id_altitude)
+# bind callback function
+client.on_message=on_connect
+client.on_message=on_message
 
-    if 'sea_level_pressure' in config['BME680']:
-        if not bDebug :
-            bme680.sea_level_pressure = float(config['BME680']['sea_level_pressure'])       
-        if bVerbose:
-            print("bme6880.sea_level_pressure =", float(config['BME680']['sea_level_pressure']))
-    
-    if 'temp_corr' in config['BME680']:
-        if not bDebug :
-            temp_corr = float(config['BME680']['temp_corr'])       
-        if bVerbose:
-            print("temp_corr =", temp_corr)
-    
-    if 'height_at_location' in config['BME680']:
-        if not bDebug :
-            height_at_location = float(config['BME680']['height_at_location'])       
-        if bVerbose:
-            print("height_at_location =", temp_corr)
-
-# -----------------------------------------------------------------------------
-    
-h1 = vscphelper.newSession()
-if (0 == h1 ):
-    vscphelper.closeSession(h1)
-    raise ValueError('Unable to open vscphelp library session')
+client.username_pw_set(user, password)
 
 if bVerbose :
-    print("\n\nConnection in progress...")
+    print("\n\nConnection in progress...", host)
+client.connect(host,port)    
 
-rv = vscphelper.open(h1,host,user,password)
-if vscp.VSCP_ERROR_SUCCESS == rv :
-    if bVerbose :
-        print("Connected")
-else:
-    vscphelper.closeSession(h1)
-    raise ValueError('Command error: open on channel 1  Error code=%d' % rv )
+client.loop_start()     # start loop to process received messages
+
+# raise ValueError('Unable to open vscphelp library session')
 
 if bVerbose :
     print("-------------------------------------------------------------------------------")
@@ -305,10 +217,11 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(temperature)] = 0  # optional terminating zero
 
-rv = vscphelper.sendEventEx(h1,ex)
-if vscp.VSCP_ERROR_SUCCESS != rv :
-    vscphelper.closeSession(h1)
-    raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
+client.publish("house/temperature",temperature)
+# rv = vscphelper.sendEventEx(h1,ex)
+# if vscp.VSCP_ERROR_SUCCESS != rv :
+#     vscphelper.closeSession(h1)
+#     raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
 
 # -----------------------------------------------------------------------------
 #                             H U M I D I T Y
@@ -336,10 +249,11 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(humidity)] = 0  # optional terminating zero
 
-rv = vscphelper.sendEventEx(h1,ex)
-if vscp.VSCP_ERROR_SUCCESS != rv :
-    vscphelper.closeSession(h1)
-    raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
+client.publish("house/humidity",humidity)
+# rv = vscphelper.sendEventEx(h1,ex)
+# if vscp.VSCP_ERROR_SUCCESS != rv :
+#     vscphelper.closeSession(h1)
+#     raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
 
 # -----------------------------------------------------------------------------
 #                             P R E S S U R E
@@ -367,10 +281,11 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(pressure)] = 0  # optional terminating zero
 
-rv = vscphelper.sendEventEx(h1,ex)
-if vscp.VSCP_ERROR_SUCCESS != rv :
-    vscphelper.closeSession(h1)
-    raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
+client.publish("house/pressure",pressure)
+# rv = vscphelper.sendEventEx(h1,ex)
+# if vscp.VSCP_ERROR_SUCCESS != rv :
+#     vscphelper.closeSession(h1)
+#     raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
 
 # -----------------------------------------------------------------------------
 #                           Adjusted Pressure
@@ -398,10 +313,11 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(pressure)] = 0  # optional terminating zero
 
-rv = vscphelper.sendEventEx(h1,ex)
-if vscp.VSCP_ERROR_SUCCESS != rv :
-    vscphelper.closeSession(h1)
-    raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
+client.publish("house/relpressure",pressure)
+# rv = vscphelper.sendEventEx(h1,ex)
+# if vscp.VSCP_ERROR_SUCCESS != rv :
+#     vscphelper.closeSession(h1)
+#     raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
 
 # -----------------------------------------------------------------------------
 #                                   Gas
@@ -429,10 +345,11 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(gas)] = 0  # optional terminating zero
 
-rv = vscphelper.sendEventEx(h1,ex)
-if vscp.VSCP_ERROR_SUCCESS != rv :
-    vscphelper.closeSession(h1)
-    raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
+client.publish("house/gas",gas)
+# rv = vscphelper.sendEventEx(h1,ex)
+# if vscp.VSCP_ERROR_SUCCESS != rv :
+#     vscphelper.closeSession(h1)
+#     raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
 
 # -----------------------------------------------------------------------------
 #                                Altitude
@@ -460,18 +377,15 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(altitude)] = 0  # optional terminating zero
 
-rv = vscphelper.sendEventEx(h1,ex)
-if vscp.VSCP_ERROR_SUCCESS != rv :
-    vscphelper.closeSession(h1)
-    raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
+client.publish("house/altitude",altitude)
+# rv = vscphelper.sendEventEx(h1,ex)
+# if vscp.VSCP_ERROR_SUCCESS != rv :
+#     vscphelper.closeSession(h1)
+#     raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
 
 
-rv = vscphelper.close(h1)
-if vscp.VSCP_ERROR_SUCCESS != rv :
-    vscphelper.closeSession(h1)
-    raise ValueError('Command error: close  Error code=%d' % rv )
-
-vscphelper.closeSession(h1)
+client.disconnect() 
+client.loop_stop() 
 
 if bVerbose :
     print("-------------------------------------------------------------------------------")

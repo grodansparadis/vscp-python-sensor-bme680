@@ -19,7 +19,23 @@ Typically used in a cron job to deliver the events on timed intervals.
 
 ## Install
 
-The script depends on some other modules that you need to install before using it.
+The script depends on some other modules that you need to install before using it. It is recommended to install everything in a virtual environment.
+
+To install in a virtual environment in your current project:
+
+```bash
+mkdir project-name && cd project-name
+python3 -m venv .env
+source .env/bin/activate
+```
+
+## Configparser
+
+Configparser can be found on [PyPi](https://pypi.org/) and is documented [https://docs.python.org/3/library/configparser.html](here). Install with
+
+```bash
+pip4 configparser
+```
 
 ### Install adafruit-circuitpython-bme680 module
 On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally from PyPI. To install for current user:
@@ -34,18 +50,9 @@ To install system-wide (this may be required in some cases):
 sudo pip3 install adafruit-circuitpython-bme680
 ```
 
-To install in a virtual environment in your current project:
-
-```bash
-mkdir project-name && cd project-name
-python3 -m venv .env
-source .env/bin/activate
-pip3 install adafruit-circuitpython-bme680
-```
-
 ### Install VSCP modules
 
-**pyvscphelper** is not needed if only MQTT should be used. You can install the modules from PyPi
+**pyvscphelper** is not needed if only MQTT should be used. You can install the modules from [PyPi](https://pypi.org/)
 
 ```bash
 pip3 install pyvscp
@@ -71,7 +78,7 @@ You setup the code by editing the script. All relevant values are in the beginni
 
 ----
 
-If you are intrested in learning more about VSCP the main site is [here](https://www.vscp.org)
+If you are interested in learning more about VSCP the main site is [here](https://www.vscp.org)
 
 Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB - MIT license.
 
