@@ -1,2 +1,6 @@
 .env
 *.pyc
+build/
+dist/
+pyvscp_sensor_bme680.egg-info/
+pyvscp_sensors_bme680.egg-info/
