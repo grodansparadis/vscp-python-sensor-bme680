@@ -62,6 +62,7 @@ def initEvent(ex,id,vscpClass,vscpType):
     ex.guid = g.guid
     ex.vscpclass = vscpClass
     ex.vscptype = vscpType
+    return g
 
 
 # Create library object using our Bus I2C port
@@ -84,7 +85,7 @@ if not bDebug :
     bme680.sea_level_pressure = 1013.25
 
 # Print some info along the way
-bVerbose = True
+bVerbose = False
 
 # Subtract this value from reported temperature
 temp_corr = 2.30
@@ -100,6 +101,10 @@ user="admin"
 
 # Password to login at server
 password="secret"
+
+# GUID for sensors (Ethernet MAC used if empty)
+# Should normally have two LSB's set to zero for sensor id use
+guid=""
 
 # Sensor index for sensors (BME680)
 # Default is to use GUID to identify sensor
@@ -145,7 +150,7 @@ for opt, arg in opts:
         usage()
         sys.exit()
     elif opt in ("-v", "--verbose"):
-        bverbose = True
+        bVerbose = True
     elif opt in ("-c", "--config"):
         cfgpath = arg
 
@@ -154,8 +159,11 @@ for opt, arg in opts:
 if (len(cfgpath)):
     init = config.read(cfgpath)
     if 'bVerbose' in config['GENERAL']:
-        bVerbose = config['GENERAL']['bVerbose']
-        print('Verbose mode enabled.')
+        bVerbose = config.getboolean('GENERAL','bVerbose')
+        if bVerbose :
+            print('Verbose mode enabled.')
+            print('READING CONFIGURATION')
+            print('---------------------')
     if 'host' in config['VSCP']:        
         host = config['VSCP']['host']
         if bVerbose:
@@ -164,11 +172,18 @@ if (len(cfgpath)):
         user = config['VSCP']['user']
         if bVerbose:
             print("user =", user)
+    
     if 'password' in config['VSCP']:        
         password = config['VSCP']['password']
         if bVerbose:
             print("password =", "***********")
+            print("password =", password)
 
+    if 'guid' in config['VSCP']:        
+        guid = config['VSCP']['guid']
+        if bVerbose:
+            print("guid =", guid)
+    
     if 'sensorindex_temperature' in config['VSCP']:        
         sensorindex_temperature = int(config['VSCP']['sensorindex_temperature'])
         if bVerbose:
@@ -284,7 +299,7 @@ if bVerbose :
 # -----------------------------------------------------------------------------
 
 if not bDebug :
-    temperature = "%0.1f".format(bme680.temperature - temp_corr)
+    temperature = "{:0.1f}".format(bme680.temperature - temp_corr)
 else:     
     temperature = "-27.8"    
 
@@ -315,7 +330,7 @@ if vscp.VSCP_ERROR_SUCCESS != rv :
 # -----------------------------------------------------------------------------
 
 if not bDebug :
-    humidity = "%0.1f".format(bme680.humidity)
+    humidity = "{:0.1f}".format(bme680.humidity)
 else:     
     humidity = "1.23"
 
@@ -346,7 +361,7 @@ if vscp.VSCP_ERROR_SUCCESS != rv :
 # -----------------------------------------------------------------------------
 
 if not bDebug :
-    pressure = "%0.3f".format(bme680.pressure*100)
+    pressure = "{:0.0f}".format(bme680.pressure*100)
 else:     
     pressure = "102300"
 
@@ -377,7 +392,7 @@ if vscp.VSCP_ERROR_SUCCESS != rv :
 # -----------------------------------------------------------------------------
 
 if not bDebug :
-    pressure = "%0.3f".format((bme680.pressure + height_at_location/8.3)*100)
+    pressure = "{:0.0f}".format((bme680.pressure + height_at_location/8.3)*100)
 else:     
     pressure = "1000"   
 
@@ -408,7 +423,7 @@ if vscp.VSCP_ERROR_SUCCESS != rv :
 # -----------------------------------------------------------------------------
 
 if not bDebug :
-    gas = "%d".format(bme680.gas)
+    gas = "{:d}".format(bme680.gas)
 else:     
     gas = "150000"   
 
@@ -439,7 +454,7 @@ if vscp.VSCP_ERROR_SUCCESS != rv :
 # -----------------------------------------------------------------------------
 
 if not bDebug :
-    altitude = "%0.2f".format(bme680.altitude)
+    altitude = "{:0.1f}".format(bme680.altitude)
 else:     
     altitude = "420"    
 

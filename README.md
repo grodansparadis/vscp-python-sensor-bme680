@@ -29,12 +29,19 @@ python3 -m venv .env
 source .env/bin/activate
 ```
 
+You may need to install Python venv
+
+```bash
+apt install python3-venv
+```
+
+
 ## Configparser
 
 Configparser can be found on [PyPi](https://pypi.org/) and is documented [https://docs.python.org/3/library/configparser.html](here). Install with
 
 ```bash
-pip4 configparser
+pip3 install configparser
 ```
 
 ### Install adafruit-circuitpython-bme680 module
@@ -57,8 +64,6 @@ sudo pip3 install adafruit-circuitpython-bme680
 ```bash
 pip3 install pyvscp
 pip3 install pyvscphelper
-pip3 install pyvscpclasses
-pip3 install pyvscptypes
 ```
 
 If you need them on more places either go for a global install or use a virtual environment and install all the modules in it.
