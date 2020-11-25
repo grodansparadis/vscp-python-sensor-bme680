@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 ###############################################################################
 # mqtt-bme680.py
 #
@@ -168,7 +170,7 @@ for opt, arg in opts:
         usage()
         sys.exit()
     elif opt in ("-v", "--verbose"):
-        bverbose = True
+        bVerbose = True
     elif opt in ("-c", "--config"):
         cfgpath = arg
 
