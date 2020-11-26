@@ -42,7 +42,7 @@ import math
 import time
 
 # Set to True to run with simulated data
-bDebug = True
+bDebug = False
 
 # Set to True to use SPI instead of I2C
 bUseSPI = False
@@ -72,17 +72,17 @@ sea_level_pressure = 1013.25
 bVerbose = False
 
 # Subtract this value from reported temperature
-temp_corr = 2.30
+temp_corr = 0.0
 
 # Height at installation  location
-height_at_location = 412.0
+height_at_location = 0.0
 
 # GUID for sensors (Ethernet MAC used if empty)
 # Should normally have two LSB's set to zero for sensor id use
 guid=""
 
 # MQTT broker
-host="192.168.1.7"
+host="127.0.0.1"
 
 # MQTT broker port
 port=1883

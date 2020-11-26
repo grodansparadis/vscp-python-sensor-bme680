@@ -169,7 +169,7 @@ mqtt-bme680.py --configure /etc/vscp/bme680-config.ini
 
 will read the configuration from _/etc/vscp/bme680-config.ini_
 
-### Sample configuration file
+## Sample configuration file
 
 If you install in a virtual environment as recommended above you will find a sample configuration file in 
 
@@ -184,6 +184,8 @@ and for a global install you can get the path by issuing
 ```bash
 pip3 -V
 ```
+
+## Content
 
 ### The GENERAL section
 
@@ -388,6 +390,52 @@ Correction value in degrees Celsius for sensor temperature reading. The value en
 ### height_at_location
 
 Set the height in meters for your location. Used for pressure adjustments. Default is 412.0 meters.
+
+## using
+
+After you have installed the module and created a configuration file test the script with
+
+```bash
+mqtt-bme680.py -v -c path-to-config
+```
+
+the MQTT broker you have defined should receive the events under the defined topics like this
+
+![](./images/mqttexplorer.png)
+
+and you will get some verbose info on the screen like this
+
+```bash
+Connection in progress... 192.168.1.7
+-------------------------------------------------------------------------------
+Sending...
+Temperature: -3.9 C
+Humidity: 97.5 %
+Pressure: 96604 Pa
+Relative pressure: 101568 Pa
+Gas: 5014 Ohm
+Altitude 401 meter
+Dew point -1.9 C
+-------------------------------------------------------------------------------
+Closed
+```
+
+now you can add the script to cron to get measurement events send to your broker on even intervals.
+
+## node-red and node.js
+
+with the VSCP tools available for node.js and node-red you can easily graph and in other ways handel the published measurement data.
+
+- You find node.js tools [here](https://www.npmjs.com/search?q=node-vscp)
+- You find node-red tools [here](https://flows.nodered.org/search?term=node-red-contrib-vscp)
+
+
+## VSCP
+
+For VSCP you find info at the [VSCP main site](https://www.vscp.org)
+
+VSCP docs are collected [here](https://docs.vscp.org/).
+
 
 
 ----
