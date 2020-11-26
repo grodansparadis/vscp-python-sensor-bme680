@@ -34,7 +34,6 @@ import getopt
 import vscp
 import vscp_class as vc
 import vscp_type as vt
-import vscphelper as vhlp
 
 import json
 import paho.mqtt.client as mqtt
@@ -426,8 +425,7 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(temperature)] = 0  # optional terminating zero
 
-rv,str = vhlp.convertEventExToJSON(ex)
-j = json.loads(str)
+j = ex.toJSON()
 j["vscpNote"] = note_temperature
 # Add extra measurement information
 j["measurement"] = { 
@@ -469,8 +467,7 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(humidity)] = 0  # optional terminating zero
 
-rv,str = vhlp.convertEventExToJSON(ex)
-j = json.loads(str)
+j = ex.toJSON()
 j["vscpNote"] = note_humidity
 # Add extra measurement information
 j["measurement"] = { 
@@ -511,8 +508,7 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(pressure)] = 0  # optional terminating zero
 
-rv,str = vhlp.convertEventExToJSON(ex)
-j = json.loads(str)
+j = ex.toJSON()
 j["vscpNote"] = note_pressure
 # Add extra pressure information
 j["measurement"] = { 
@@ -553,8 +549,7 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(pressure)] = 0  # optional terminating zero
 
-rv,str = vhlp.convertEventExToJSON(ex)
-j = json.loads(str)
+j = ex.toJSON()
 j["vscpNote"] = note_pressure_adj
 # Add extra pressure information
 j["measurement"] = { 
@@ -595,8 +590,7 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(gas)] = 0  # optional terminating zero
 
-rv,str = vhlp.convertEventExToJSON(ex)
-j = json.loads(str)
+j = ex.toJSON()
 j["vscpNote"] = note_gas
 # Add extra pressure information
 j["measurement"] = { 
@@ -638,8 +632,7 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(altitude)] = 0  # optional terminating zero
 
-rv,str = vhlp.convertEventExToJSON(ex)
-j = json.loads(str)
+j = ex.toJSON()
 j["vscpNote"] = note_altitude
 # Add extra pressure information
 j["measurement"] = { 
@@ -691,8 +684,7 @@ for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(dew)] = 0  # optional terminating zero
 
-rv,str = vhlp.convertEventExToJSON(ex)
-j = json.loads(str)
+j = ex.toJSON()
 j["vscpNote"] = note_dewpoint
 # Add extra pressure information
 j["measurement"] = { 
