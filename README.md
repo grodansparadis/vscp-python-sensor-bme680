@@ -4,7 +4,7 @@
 
 <img src="https://vscp.org/images/logo.png" width="100">
 
-This project consisty of two scripts to deliver data from a [BME680](https://www.bosch-sensortec.com/products/environmental-sensors/gas-sensors-bme680/) sensor to a VSCP daemon (vscp-bme680.py) or a MQTT broker (mqtt-bme680.py). It is built upon the [Adafruit BME680 module](https://github.com/adafruit/Adafruit_CircuitPython_BME680)
+This project consist of a scripts to deliver data from a [BME680](https://www.bosch-sensortec.com/products/environmental-sensors/gas-sensors-bme680/) sensor to a MQTT broker (mqtt-bme680.py). It is built upon the [Adafruit BME680 module](https://github.com/adafruit/Adafruit_CircuitPython_BME680)
 
 It will deliver VSCP events for
 
@@ -14,24 +14,25 @@ It will deliver VSCP events for
 * Pressure (adjusted for sea level)
 * Altitude
 * Gas concentration
+* Dew point
 
 Typically the scripts is used in a [cron job](https://ostechnix.com/a-beginners-guide-to-cron-jobs/) to deliver the events on timed intervals.
 
 Adafruit is the most popular source for [BME680 breakout boards](https://www.adafruit.com/product/3660) but there are many others available also in different price ranges.
 
-![](https://cdn-learn.adafruit.com/guides/cropped_images/000/001/822/medium640/3660_top_ORIG_2020_07.jpg?1596135784)
+![BME680](https://cdn-learn.adafruit.com/guides/cropped_images/000/001/822/medium640/3660_top_ORIG_2020_07.jpg?1596135784)
 
-The scripts be configured to be used with either a SPI or I2C connected sensor.
+The scripts can be configured to be used with either a SPI or I2C connected sensor.
 
 ## Install/connect the sensor
 
-Lady Ada has written a very good tutorial on this [here](https://learn.adafruit.com/adafruit-bme680-humidity-temperature-barometic-pressure-voc-gas)
+Lady Ada has written a very good tutorial on this [here](https://learn.adafruit.com/adafruit-bme680-humidity-temperature-barometic-pressure-voc-gas). Follow it to install your sensor.
 
 ## Install
 
 ### Prerequisites
 
-The code here is dependent on the [VSCP helper library](https://github.com/grodansparadis/vscp-helper-lib). Therefore you have to install this package first. It is available for Debian type systems including Raspberry Pi.
+The code here is dependent on the [VSCP helper library](https://github.com/grodansparadis/vscp-helper-lib). Therefore you have to install this package first. It is available for Debian type systems including Raspberry Pi. Check and download the latest version [here](https://github.com/grodansparadis/vscp-helper-lib/releases)
 
 For convenience this is how the current version is installed on a Raaspberry Pi
 
@@ -74,11 +75,11 @@ source .env/bin/activate
 
 then do the install of **vscp-python-sensor-bme680** as of above.
 
-After install you can use **vscp-bme680.py** and **mqtt-bme68.py** from the command line. Info on how to configure the scripts for your needs are below.
+After install you can use **vscp-bme680.py** from the command line. Info on how to configure the scripts for your needs are below.
 
 ### Manual Install
 
-For some reason you may not want to use PyPi and want to download the scripts from the [github repository](https://github.com/grodansparadis/vscp-python-sensor-bme680).
+For some reason you may not want to use PyPi and want to download the scripts from the [github repository](https://github.com/grodansparadis/vscp-python-sensor-bme680). 
 
 The script depends on some other modules that you need to install before using it. It is recommended to install everything in a virtual environment.
 
@@ -149,25 +150,21 @@ The settings are named the same in the config file as in the script itself so th
 To get help you can issue
 
 ```bash
-vscp-bme680.py --help
-```
-
-or
-
-```bash
 mqtt-bme680.py --help
 ```
 
-The recommended way to configure the scripts is to use a configuration file and store this file in a safe location as it contains usernames and password. The syntax to instruct the sctipty top read a configuration file is
+on the command line after the module is installed.
+
+The recommended way to configure the scripts is to use a configuration file and store this file in a safe location as it contains usernames and password and in that way can protect this sensitive information. The syntax to instruct the script to read a configuration file is
 
 ```bash
-xxxx-bme680.py --configure path-to-config-file
+mqtt-bme680.py --configure path-to-config-file
 ```
 
 So 
 
 ```bash
-vscp-bme680.py --configure /etc/vscp/bme680-config.ini
+mqtt-bme680.py --configure /etc/vscp/bme680-config.ini
 ```
 
 will read the configuration from _/etc/vscp/bme680-config.ini_
@@ -202,25 +199,15 @@ to get some info when the script is run. Set to
 
 to make the script silent.
 
+#### bUseSPI
+
+Set 
+
+> bUseSPI = True 
+
+to use SPI communication to connect the sensor instead of I2C
+
 ### The [VSCP] section
-
-#### host
-
-Only relevant for the _vscp-bme680.py_ script.
-
-Set the address and port for the VSCP daemon the script should deliver VSCP events to. The format is _server:port_
-
-#### user
-
-Only relevant for the _vscp-bme680.py_ script.
-
-User name needed to login to the VSCP daemon.
-
-#### password
-
-Only relevant for the _vscp-bme680.py_ script.
-
-Password needed to login to the VSCP daemon.
 
 #### guid
 
@@ -256,6 +243,10 @@ Sensor index for the gas concentration sensor. Default is that it is set to zero
 
 Sensor index for the altitude. Default is that it is set to zero as the GUID is unique for each sensor. Set to a byte value of your choice if you need it.
 
+#### sensorindex_dewpoint
+
+Sensor index for the dew point. Default is that it is set to zero as the GUID is unique for each sensor. Set to a byte value of your choice if you need it.
+
 #### zone
 
 Set the zone to a value between 0-255 if you need it. Default is zero.
@@ -288,35 +279,29 @@ Set id_temperature to a value between 0-65535 to set the id for the reported val
 
 Set id_temperature to a value between 0-65535 to set the id for the reported value. This is the two LSB bytes of the GUID used to report the sensor value. Default is 6.
 
+#### id_dewpoint
+
+Set id_dewpoint to a value between 0-65535 to set the id for the reported value. This is the two LSB bytes of the GUID used to report the sensor value. Default is 6.
+
 ### The [MQTT] section
 
 ### host
-
-Only relevant for the _mqtt-bme680.py_ script.
 
 The address for the MQTT broker which will get reported values.
 
 ### port
 
-Only relevant for the _mqtt-bme680.py_ script.
-
 Port on the MQTT broker.
 
 ### user
-
-Only relevant for the _mqtt-bme680.py_ script.
 
 Username used to login to MQTT broker.
 
 ### password
 
-Only relevant for the _mqtt-bme680.py_ script.
-
 Password used to login to MQTT broker.
 
 ### topic_temperature
-
-Only relevant for the _mqtt-bme680.py_ script.
 
 This is the topic under which the temperature event will be sent. The default is
 
@@ -330,17 +315,15 @@ This is the topic under which the temperature event will be sent. The default is
 
 ### topic_humidity
 
-Only relevant for the _mqtt-bme680.py_ script.
-
 This is the topic under which the humidity event will be sent. The default is
 
 > vscp/{xguid}/miso/{xclass}/{xtype}
 
 See __topic_temperature__ for full info.
 
-### topic_pressure
+And empty topic can be used if you don't want the value to be sent.
 
-Only relevant for the _mqtt-bme680.py_ script.
+### topic_pressure
 
 This is the topic under which the pressure event will be sent. The default is
 
@@ -348,9 +331,9 @@ This is the topic under which the pressure event will be sent. The default is
 
 See __topic_temperature__ for full info.
 
-### topic_pressure_adj
+And empty topic can be used if you don't want the value to be sent.
 
-Only relevant for the _mqtt-bme680.py_ script.
+### topic_pressure_adj
 
 This is the topic under which the sea level adjusted pressure event will be sent. The default is
 
@@ -358,9 +341,9 @@ This is the topic under which the sea level adjusted pressure event will be sent
 
 See __topic_temperature__ for full info.
 
-### topic_gas
+And empty topic can be used if you don't want the value to be sent.
 
-Only relevant for the _mqtt-bme680.py_ script.
+### topic_gas
 
 This is the topic under which the gas concentration event will be sent. The default is
 
@@ -368,9 +351,9 @@ This is the topic under which the gas concentration event will be sent. The defa
 
 See __topic_temperature__ for full info.
 
-### topic_altitude
+And empty topic can be used if you don't want the value to be sent.
 
-Only relevant for the _mqtt-bme680.py_ script.
+### topic_altitude
 
 This is the topic under which the altitude event will be sent. The default is
 
@@ -378,15 +361,28 @@ This is the topic under which the altitude event will be sent. The default is
 
 See __topic_temperature__ for full info.
 
+And empty topic can be used if you don't want the value to be sent.
+
+### topic_dewpoint
+
+This is the topic under which the dew point event will be sent. The default is
+
+> vscp/{xguid}/miso/{xclass}/{xtype}
+
+See __topic_temperature__ for full info.
+
+And empty topic can be used if you don't want the value to be sent.
+
+
 ### The [BME680] section
 
 ### sea_level_pressure 
 
-Pressure at sea level. Used for pressure adjustment. Default is 1013.25
+Pressure in hPa at sea level. Used for pressure adjustment. Default is 1013.25
 
 ### temp_corr
 
-Correction value for sensor temperature reading. The value entered here will be subtracted from the reading. Default is 0. 
+Correction value in degrees Celsius for sensor temperature reading. The value entered here will be subtracted from the reading. Default is 0. 
 
 
 ### height_at_location

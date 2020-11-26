@@ -439,7 +439,8 @@ j["measurement"] = {
 }
 
 ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
-client.publish(ptopic, json.dumps(j))
+if ( len(ptopic) ):
+    client.publish(ptopic, json.dumps(j))
 
 
 # -----------------------------------------------------------------------------
@@ -469,6 +470,7 @@ for idx in range(len(b)):
 ex.data[4 + len(humidity)] = 0  # optional terminating zero
 
 rv,str = vhlp.convertEventExToJSON(ex)
+j = json.loads(str)
 j["vscpNote"] = note_humidity
 # Add extra measurement information
 j["measurement"] = { 
@@ -480,7 +482,8 @@ j["measurement"] = {
 }
 
 ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
-client.publish(ptopic, json.dumps(j))
+if ( len(ptopic) ):
+    client.publish(ptopic, json.dumps(j))
 
 # -----------------------------------------------------------------------------
 #                             P R E S S U R E
@@ -509,6 +512,7 @@ for idx in range(len(b)):
 ex.data[4 + len(pressure)] = 0  # optional terminating zero
 
 rv,str = vhlp.convertEventExToJSON(ex)
+j = json.loads(str)
 j["vscpNote"] = note_pressure
 # Add extra pressure information
 j["measurement"] = { 
@@ -520,7 +524,8 @@ j["measurement"] = {
 }
 
 ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
-client.publish(ptopic, json.dumps(j))
+if ( len(ptopic) ):
+    client.publish(ptopic, json.dumps(j))
 
 # -----------------------------------------------------------------------------
 #                           Adjusted Pressure
@@ -549,6 +554,7 @@ for idx in range(len(b)):
 ex.data[4 + len(pressure)] = 0  # optional terminating zero
 
 rv,str = vhlp.convertEventExToJSON(ex)
+j = json.loads(str)
 j["vscpNote"] = note_pressure_adj
 # Add extra pressure information
 j["measurement"] = { 
@@ -560,7 +566,8 @@ j["measurement"] = {
 }
 
 ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
-client.publish(ptopic, json.dumps(j))
+if ( len(ptopic) ):
+    client.publish(ptopic, json.dumps(j))
 
 # -----------------------------------------------------------------------------
 #                                   Gas
@@ -589,6 +596,7 @@ for idx in range(len(b)):
 ex.data[4 + len(gas)] = 0  # optional terminating zero
 
 rv,str = vhlp.convertEventExToJSON(ex)
+j = json.loads(str)
 j["vscpNote"] = note_gas
 # Add extra pressure information
 j["measurement"] = { 
@@ -600,7 +608,8 @@ j["measurement"] = {
 }
 
 ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
-client.publish(ptopic, json.dumps(j))
+if ( len(ptopic) ):
+    client.publish(ptopic, json.dumps(j))
 
 
 # -----------------------------------------------------------------------------
@@ -630,6 +639,7 @@ for idx in range(len(b)):
 ex.data[4 + len(altitude)] = 0  # optional terminating zero
 
 rv,str = vhlp.convertEventExToJSON(ex)
+j = json.loads(str)
 j["vscpNote"] = note_altitude
 # Add extra pressure information
 j["measurement"] = { 
@@ -641,7 +651,8 @@ j["measurement"] = {
 }
 
 ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
-client.publish(ptopic, json.dumps(j))
+if ( len(ptopic) ):
+    client.publish(ptopic, json.dumps(j))
 
 
 # -----------------------------------------------------------------------------
@@ -681,6 +692,7 @@ for idx in range(len(b)):
 ex.data[4 + len(dew)] = 0  # optional terminating zero
 
 rv,str = vhlp.convertEventExToJSON(ex)
+j = json.loads(str)
 j["vscpNote"] = note_dewpoint
 # Add extra pressure information
 j["measurement"] = { 
@@ -692,7 +704,8 @@ j["measurement"] = {
 }
 
 ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
-client.publish(ptopic, json.dumps(j))
+if ( len(ptopic) ):
+    client.publish(ptopic, json.dumps(j))
 
 # -----------------------------------------------------------------------------
 
