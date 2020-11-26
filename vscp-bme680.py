@@ -27,9 +27,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+#                      * * * * * This script is deprecated * * * * *
+
 import sys
 import configparser
 import getopt
+from sys import float_repr_style
 
 import vscp
 import vscp_class as vc
@@ -37,9 +40,13 @@ import vscp_type as vt
 import vscphelper
 
 import time
+import math
 
 # Set to True to run with simulated data
 bDebug = True
+
+# Set to True to use SPI instead of I2C
+bUseSPI = False
 
 config = configparser.ConfigParser()
 
@@ -55,32 +62,11 @@ def usage():
     print("-v/--verbose - Print output also to screen.")
     print("-c/--config  - Path to configuration file.")
 
-# Initialize VSCP event content
-def initEvent(ex,id,vscpClass,vscpType):
-    # Dumb node, priority normal
-    ex.head = vscp.VSCP_PRIORITY_NORMAL | vscp.VSCP_HEADER16_DUMB
-    g = vscp.guid()
-    g.setGUIDFromMAC(id)
-    ex.guid = g.guid
-    ex.vscpclass = vscpClass
-    ex.vscptype = vscpType
-    return g
-
-
-# Create library object using our Bus I2C port
-if not bDebug :
-    i2c = busio.I2C(board.SCL, board.SDA)
-    bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c)
-     
-# OR create library object using our Bus SPI port
-# if not bDebug :
-#   spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-#   bme_cs = digitalio.DigitalInOut(board.D10)
-#   bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
 
 # ----------------------------------------------------------------------------
 #                              C O N F I G U R E
 # ----------------------------------------------------------------------------
+
 
 # change this to match the location's pressure (hPa) at sea level
 if not bDebug :
@@ -95,6 +81,10 @@ temp_corr = 2.30
 # Height at installation  location
 height_at_location = 412.0
 
+# GUID for sensors (Ethernet MAC used if empty)
+# Should normally have two LSB's set to zero for sensor id use
+guid=""
+
 # Server and port
 host="192.168.1.7:9598"
 
@@ -104,10 +94,6 @@ user="admin"
 # Password to login at server
 password="secret"
 
-# GUID for sensors (Ethernet MAC used if empty)
-# Should normally have two LSB's set to zero for sensor id use
-guid=""
-
 # Sensor index for sensors (BME680)
 # Default is to use GUID to identify sensor
 sensorindex_temperature = 0
@@ -116,6 +102,7 @@ sensorindex_pressure = 0
 sensorindex_pressure_adj = 0
 sensorindex_gas = 0
 sensorindex_altitude = 0
+sensorindex_dewpoint = 0
 
 # Zone for module
 zone=0
@@ -131,6 +118,7 @@ id_pressure = 3
 id_pressure_adj = 4
 id_gas = 5
 id_altitude = 6
+id_dewpoint = 7
 
 # Configuration will be read from path set here
 cfgpath=""  
@@ -216,6 +204,11 @@ if (len(cfgpath)):
         if bVerbose:
             print("sensorindex_altitude =", sensorindex_altitude)
 
+    if 'sensorindex_dewpoint' in config['VSCP']:        
+        sensorindex_dewpoint = int(config['VSCP']['sensorindex_dewpoint'])
+        if bVerbose:
+            print("sensorindex_dewpoint =", sensorindex_dewpoint)
+
     if 'zone' in config['VSCP']:        
         zone = int(config['VSCP']['zone'])
         if bVerbose:
@@ -255,6 +248,11 @@ if (len(cfgpath)):
         id_altitude = int(config['VSCP']['id_altitude'])
         if bVerbose:
             print("id_altitude =", id_altitude)
+    
+    if 'id_dewpoint' in config['VSCP']:        
+        id_dewpoint = int(config['VSCP']['id_dewpoint'])
+        if bVerbose:
+            print("id_dewpoint =", id_altitude)
 
     if 'sea_level_pressure' in config['BME680']:
         if not bDebug :
@@ -273,6 +271,37 @@ if (len(cfgpath)):
             height_at_location = float(config['BME680']['height_at_location'])       
         if bVerbose:
             print("height_at_location =", temp_corr)
+
+# -----------------------------------------------------------------------------
+
+# Initialize VSCP event content
+def initEvent(ex,id,vscpClass,vscpType):
+    # Dumb node, priority normal
+    ex.head = vscp.VSCP_PRIORITY_NORMAL | vscp.VSCP_HEADER16_DUMB
+    g = vscp.guid()
+    if (len(guid)):
+        g.setFromString(guid)
+    else :    
+        g.setGUIDFromMAC(id)
+    ex.guid = g.guid
+    ex.vscpclass = vscpClass
+    ex.vscptype = vscpType
+    return g           
+
+# -----------------------------------------------------------------------------
+
+# Create library object using our Bus I2C port
+if not bUseSPI :
+    if not bDebug :
+        i2c = busio.I2C(board.SCL, board.SDA)
+        bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c)
+
+else :     
+    # OR create library object using our Bus SPI port
+    if not bDebug :
+        spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
+        bme_cs = digitalio.DigitalInOut(board.D10)
+        bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
 
 # -----------------------------------------------------------------------------
     
@@ -482,6 +511,48 @@ if vscp.VSCP_ERROR_SUCCESS != rv :
     vscphelper.closeSession(h1)
     raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
 
+# -----------------------------------------------------------------------------
+#                                Dew point
+# -----------------------------------------------------------------------------
+# https://en.wikipedia.org/wiki/Dew_point#Calculating_the_dew_point
+
+b = 17.62
+c = 243.12
+if not bDebug :
+    gamma = (b * bme680.temperature /(c + bme680.temperature)) + math.log(bme680.humidity / 100.0)
+else:
+    gamma = 1
+    
+dewpoint = (c * gamma) / (b - gamma)
+
+if not bDebug :
+    dew = "{:0.1f}".format(dewpoint)
+else:     
+    dew = "12"    
+
+if bVerbose :
+    print("Dew point",dew,"C")
+
+ex = vscp.vscpEventEx()
+initEvent(ex, id_dewpoint, vc.VSCP_CLASS2_MEASUREMENT_STR,vt.VSCP_TYPE_MEASUREMENT_DEWPOINT)
+
+# Size is predata + string length + terminating zero
+ex.sizedata = 4 + len(dew) + 1
+ex.data[0] = sensorindex_dewpoint
+ex.data[1] = zone
+ex.data[2] = subzone
+ex.data[3] = 0  # default unit Meters
+b = altitude.encode()
+for idx in range(len(b)):
+    ex.data[idx + 4] = b[idx]
+ex.data[4 + len(dew)] = 0  # optional terminating zero
+
+rv = vscphelper.sendEventEx(h1,ex)
+if vscp.VSCP_ERROR_SUCCESS != rv :
+    vscphelper.closeSession(h1)
+    raise ValueError('Command error: sendEventEx  Error code=%d' % rv )
+
+# -----------------------------------------------------------------------------
 
 rv = vscphelper.close(h1)
 if vscp.VSCP_ERROR_SUCCESS != rv :

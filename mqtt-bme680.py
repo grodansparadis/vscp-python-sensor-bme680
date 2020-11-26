@@ -39,10 +39,14 @@ import vscphelper as vhlp
 import json
 import paho.mqtt.client as mqtt
 
+import math
 import time
 
 # Set to True to run with simulated data
 bDebug = True
+
+# Set to True to use SPI instead of I2C
+bUseSPI = False
 
 config = configparser.ConfigParser()
 
@@ -58,39 +62,12 @@ def usage():
     print("-v/--verbose - Print output also to screen.")
     print("-c/--config  - Path to configuration file.")
 
-# Initialize VSCP event content
-def initEvent(ex,id,vscpClass,vscpType):
-    # Dumb node, priority normal
-    ex.head = vscp.VSCP_PRIORITY_NORMAL | vscp.VSCP_HEADER16_DUMB
-    g = vscp.guid()
-    g.setGUIDFromMAC(id)
-    ex.guid = g.guid
-    ex.vscpclass = vscpClass
-    ex.vscptype = vscpType
-    return g
-
-# def getFloatByteArray :
-#     return bytearray(struct.pack("f", value))  
-
-# Create library object using our Bus I2C port
-if not bDebug :
-    i2c = busio.I2C(board.SCL, board.SDA)
-    bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c)
-     
-# OR create library object using our Bus SPI port
-# if not bDebug :
-#   spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-#   bme_cs = digitalio.DigitalInOut(board.D10)
-#   bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
-
-
 # ----------------------------------------------------------------------------
 #                              C O N F I G U R E
 # ----------------------------------------------------------------------------
 
 # change this to match the location's pressure (hPa) at sea level
-if not bDebug :
-    bme680.sea_level_pressure = 1013.25
+sea_level_pressure = 1013.25
 
 # Print some info along the way
 bVerbose = False
@@ -100,6 +77,10 @@ temp_corr = 2.30
 
 # Height at installation  location
 height_at_location = 412.0
+
+# GUID for sensors (Ethernet MAC used if empty)
+# Should normally have two LSB's set to zero for sensor id use
+guid=""
 
 # MQTT broker
 host="192.168.1.7"
@@ -127,6 +108,7 @@ sensorindex_pressure = 0
 sensorindex_pressure_adj = 0
 sensorindex_gas = 0
 sensorindex_altitude = 0
+sensorindex_dewpoint = 0
 
 # Zone for module
 zone=0
@@ -142,6 +124,7 @@ id_pressure = 3
 id_pressure_adj = 4
 id_gas = 5
 id_altitude = 6
+id_dewpoint = 7
 
 note_temperature = "Temperature from BME680"
 note_humidity = "Humidity from BME680"
@@ -149,6 +132,7 @@ note_pressure = "Pressure from BME680"
 note_pressure_adj = "Sea level pressure from BME680"
 note_gas = "Gas concentration from BME680"
 note_altitude = "Altitude from BME680"
+note_dewpoint = "Dewpoint from BME680"
 
 # Configuration will be read from path set here
 cfgpath=""   
@@ -222,6 +206,11 @@ if (len(cfgpath)):
         if bVerbose:
             print("sensorindex_altitude =", sensorindex_altitude)
 
+    if 'sensorindex_dewpoint' in config['VSCP']:        
+        sensorindex_dewpoint = int(config['VSCP']['sensorindex_dewpoint'])
+        if bVerbose:
+            print("sensorindex_dewpoint =", sensorindex_dewpoint)
+    
     if 'zone' in config['VSCP']:        
         zone = int(config['VSCP']['zone'])
         if bVerbose:
@@ -261,7 +250,12 @@ if (len(cfgpath)):
         id_altitude = int(config['VSCP']['id_altitude'])
         if bVerbose:
             print("id_altitude =", id_altitude)
-
+    
+    if 'id_dewpoint' in config['VSCP']:        
+        id_dewpoint = int(config['VSCP']['id_dewpoint'])
+        if bVerbose:
+            print("id_dewpoint =", id_altitude)
+    
     # ----------------- MQTT -----------------
     if 'host' in config['MQTT']:        
         host = config['MQTT']['host']
@@ -319,12 +313,17 @@ if (len(cfgpath)):
         if bVerbose:
             print("note_altitude =", note_altitude)
     
+    if 'note_dewpoint' in config['MQTT']:        
+        note_dewpoint = config['MQTT']['note_dewpoint']
+        if bVerbose:
+            print("note_dewpoint =", note_dewpoint)
+    
     # ----------------- BME680 -----------------
     if 'sea_level_pressure' in config['BME680']:
         if not bDebug :
-            bme680.sea_level_pressure = float(config['BME680']['sea_level_pressure'])       
+            sea_level_pressure = float(config['BME680']['sea_level_pressure'])       
         if bVerbose:
-            print("bme6880.sea_level_pressure =", float(config['BME680']['sea_level_pressure']))
+            print("sea_level_pressure =", float(config['BME680']['sea_level_pressure']))
     
     if 'temp_corr' in config['BME680']:
         if not bDebug :
@@ -362,8 +361,40 @@ client.connect(host,port)
 
 client.loop_start()     # start loop to process received messages
 
-# while not client.is_connected():
-#     raise "Not connected!"
+# Initialize VSCP event content
+def initEvent(ex,id,vscpClass,vscpType):
+    # Dumb node, priority normal
+    ex.head = vscp.VSCP_PRIORITY_NORMAL | vscp.VSCP_HEADER16_DUMB
+    g = vscp.guid()
+    if (len(guid)):
+        g.setFromString(guid)
+    else :    
+        g.setGUIDFromMAC(id)
+    ex.guid = g.guid
+    ex.vscpclass = vscpClass
+    ex.vscptype = vscpType
+    return g
+
+# -----------------------------------------------------------------------------
+
+# Create library object using our Bus I2C port
+if not bUseSPI :
+    if not bDebug :
+        i2c = busio.I2C(board.SCL, board.SDA)
+        bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c)
+
+else :     
+    # OR create library object using our Bus SPI port
+    if not bDebug :
+        spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
+        bme_cs = digitalio.DigitalInOut(board.D10)
+        bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
+
+# -----------------------------------------------------------------------------
+
+# change this to match the location's pressure (hPa) at sea level
+if not bDebug :
+    bme680.sea_level_pressure = sea_level_pressure
 
 if bVerbose :
     print("-------------------------------------------------------------------------------")
@@ -456,7 +487,7 @@ client.publish(ptopic, json.dumps(j))
 # -----------------------------------------------------------------------------
 
 if not bDebug :
-    pressure = "{:0.3f}".format(bme680.pressure*100)
+    pressure = "{:0.0f}".format(bme680.pressure*100)
 else:     
     pressure = "102300"
 
@@ -496,7 +527,7 @@ client.publish(ptopic, json.dumps(j))
 # -----------------------------------------------------------------------------
 
 if not bDebug :
-    pressure = "{:0.3f}".format((bme680.pressure + height_at_location/8.3)*100)
+    pressure = "{:0.0f}".format((bme680.pressure + height_at_location/8.3)*100)
 else:     
     pressure = "1000"   
 
@@ -577,7 +608,7 @@ client.publish(ptopic, json.dumps(j))
 # -----------------------------------------------------------------------------
 
 if not bDebug :
-    altitude = "{:0.2f}".format(bme680.altitude)
+    altitude = "{:0.0f}".format(bme680.altitude)
 else:     
     altitude = "420"    
 
@@ -611,6 +642,59 @@ j["measurement"] = {
 
 ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
 client.publish(ptopic, json.dumps(j))
+
+
+# -----------------------------------------------------------------------------
+#                                Dew point
+# -----------------------------------------------------------------------------
+# https://en.wikipedia.org/wiki/Dew_point#Calculating_the_dew_point
+
+b = 17.62
+c = 243.12
+if not bDebug :
+    gamma = (b * bme680.temperature /(c + bme680.temperature)) + math.log(bme680.humidity / 100.0)
+else:
+    gamma = 1
+    
+dewpoint = (c * gamma) / (b - gamma)
+
+if not bDebug :
+    dew = "{:0.1f}".format(dewpoint)
+else:     
+    dew = "12"    
+
+if bVerbose :
+    print("Dew point",dew,"C")
+
+ex = vscp.vscpEventEx()
+initEvent(ex, id_dewpoint, vc.VSCP_CLASS2_MEASUREMENT_STR,vt.VSCP_TYPE_MEASUREMENT_DEWPOINT)
+
+# Size is predata + string length + terminating zero
+ex.sizedata = 4 + len(dew) + 1
+ex.data[0] = sensorindex_dewpoint
+ex.data[1] = zone
+ex.data[2] = subzone
+ex.data[3] = 0  # default unit Meters
+b = altitude.encode()
+for idx in range(len(b)):
+    ex.data[idx + 4] = b[idx]
+ex.data[4 + len(dew)] = 0  # optional terminating zero
+
+rv,str = vhlp.convertEventExToJSON(ex)
+j["vscpNote"] = note_dewpoint
+# Add extra pressure information
+j["measurement"] = { 
+    "value" : float(dewpoint),
+    "unit" : 0,
+    "sensorindex" : sensorindex_dewpoint,
+    "zone" : zone,
+    "subzone" : subzone
+}
+
+ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
+client.publish(ptopic, json.dumps(j))
+
+# -----------------------------------------------------------------------------
 
 
 client.disconnect() 

@@ -23,7 +23,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.5',
+    version='0.0.6',
 
     description='VSCP BME680 sensor handler',
     long_description=long_description,
@@ -71,7 +71,7 @@ setup(
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     #packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    py_modules=["mqtt-bme680", "vscp-bme680"],
+    py_modules=["mqtt-bme680"],
 
     python_requires='>=3.0',
 
@@ -116,14 +116,13 @@ setup(
     data_files=[('pyvscp-sensors-bme680-sample-config', ['config.ini'])],
 
     # Scripts that will be made available
-    scripts=['vscp-bme680.py','mqtt-bme680.py'],
+    scripts=['mqtt-bme680.py'],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     #entry_points={
     #    'console_scripts': [
-    #        'vscp-bme680=pyvscp_sensors_bme680.vscp-bme680:main',
     #        'mqtt-bme680=pyvscp-sensors-bme680.mqtt-bme680:main',
     #    ],
     #},
