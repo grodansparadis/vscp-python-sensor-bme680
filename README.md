@@ -307,19 +307,19 @@ Password used to login to MQTT broker.
 
 This is the topic under which the temperature event will be sent. The default is
 
-> vscp/{xguid}/miso/{xclass}/{xtype}
+> vscp/{xguid}/->/{xclass}/{xtype}
 
 - _{xguid}_ will be replaced with the GUID of the event.
 - _{xclass}_ will be replaced with the VSCP class of the event.
 - _{xtype}_ will be replaced with the VSCP type of the event.
 
-**miso** stands for Master In Slave Out and is used by VSCP when talking to a MQTT broker. **mosi** is the opposite, Master Out Slave In. 
+**->** stands for "input" and is used by VSCP when talking to a MQTT broker. **<--** is the opposite, "output". 
 
 ### topic_humidity
 
 This is the topic under which the humidity event will be sent. The default is
 
-> vscp/{xguid}/miso/{xclass}/{xtype}
+> vscp/{xguid}/->/{xclass}/{xtype}
 
 See __topic_temperature__ for full info.
 
@@ -329,7 +329,7 @@ And empty topic can be used if you don't want the value to be sent.
 
 This is the topic under which the pressure event will be sent. The default is
 
-> vscp/{xguid}/miso/{xclass}/{xtype}
+> vscp/{xguid}/->/{xclass}/{xtype}
 
 See __topic_temperature__ for full info.
 
@@ -339,7 +339,7 @@ And empty topic can be used if you don't want the value to be sent.
 
 This is the topic under which the sea level adjusted pressure event will be sent. The default is
 
-> vscp/{xguid}/miso/{xclass}/{xtype}
+> vscp/{xguid}/->/{xclass}/{xtype}
 
 See __topic_temperature__ for full info.
 
@@ -349,7 +349,7 @@ And empty topic can be used if you don't want the value to be sent.
 
 This is the topic under which the gas concentration event will be sent. The default is
 
-> vscp/{xguid}/miso/{xclass}/{xtype}
+> vscp/{xguid}/->/{xclass}/{xtype}
 
 See __topic_temperature__ for full info.
 
@@ -359,7 +359,7 @@ And empty topic can be used if you don't want the value to be sent.
 
 This is the topic under which the altitude event will be sent. The default is
 
-> vscp/{xguid}/miso/{xclass}/{xtype}
+> vscp/{xguid}/->/{xclass}/{xtype}
 
 See __topic_temperature__ for full info.
 
@@ -369,7 +369,7 @@ And empty topic can be used if you don't want the value to be sent.
 
 This is the topic under which the dew point event will be sent. The default is
 
-> vscp/{xguid}/miso/{xclass}/{xtype}
+> vscp/{xguid}/->/{xclass}/{xtype}
 
 See __topic_temperature__ for full info.
 
