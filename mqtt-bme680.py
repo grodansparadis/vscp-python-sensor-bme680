@@ -97,7 +97,7 @@ password="secret"
 #   %guid% is replaced with GUID
 #   %class% is replaced with event class
 #   %type% is replaced with event type   
-topic="vscp/{xguid}/->/{xclass}/{xtype}"
+topic="vscp/{xguid}/{xclass}/{xtype}"
 
 # Sensor index for sensors (BME680)
 # Default is to use GUID to identify sensor
