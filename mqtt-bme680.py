@@ -7,7 +7,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+# Copyright © 2000-2021 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -365,7 +365,7 @@ def initEvent(ex,id,vscpClass,vscpType):
     # Dumb node, priority normal
     ex.head = vscp.VSCP_PRIORITY_NORMAL | vscp.VSCP_HEADER16_DUMB
     g = vscp.guid()
-    if (len(guid)):
+    if ("" == guid):
         g.setFromString(guid)
     else :    
         g.setGUIDFromMAC(id)
