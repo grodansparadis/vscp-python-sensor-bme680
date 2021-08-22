@@ -56,13 +56,13 @@ The scripts are available as a package **vscp-python-sensor-bme680** on [PyPi](h
 The installation process is easy
 
 ```bash
-pip3 install vscp-python-sensor-bme680
+pip3 install pyvscp-sensors-bme680
 ```
 
 To later upgrade to the latest version use
 
 ```bash
-pip3 install --upgrade vscp-python-sensor-bme680
+pip3 install --upgrade pyvscp-sensors-bme680
 ```
 
 It is not required but recommended to install in a virtual environment To install in a virtual environment in your current project:
