@@ -51,7 +51,7 @@ Note that there may be [later versions available)(https://github.com/grodanspara
 
 ### Install the package
 
-The scripts are available as a package **vscp-python-sensor-bme680** on [PyPi](https://pypi.org/project/pyvscp-sensors-bme680/). This means you can do an automatic install with pip that will handle all dependencies expect for the helper library mentioned above which must be install manually.
+The scripts are available as a package **pyvscp-sensors-bme680** on [PyPi](https://pypi.org/project/pyvscp-sensors-bme680/). This means you can do an automatic install with pip that will handle all dependencies expect for the helper library mentioned above which must be install manually.
 
 The installation process is easy
 
@@ -73,7 +73,7 @@ python3 -m venv .env
 source .env/bin/activate
 ```
 
-then do the install of **vscp-python-sensor-bme680** as of above.
+then do the install of **pyvscp-sensors-bme680** as of above.
 
 After install you can use **vscp-bme680.py** from the command line. Info on how to configure the scripts for your needs are below.
 
