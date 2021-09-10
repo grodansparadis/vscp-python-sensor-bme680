@@ -2,7 +2,7 @@
 
 See:
 https://packaging.python.org/en/latest/distributing.html
-https://github.com/grodansparadis/pyvscp
+https://github.com/grodansparadis/vscp_python_sensor_bme680
 """
 
 # Always prefer setuptools over distutils
