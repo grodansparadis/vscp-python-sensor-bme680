@@ -31,7 +31,7 @@ import sys
 import configparser
 import getopt
 
-import vscp
+import vscp 
 import vscp_class as vc
 import vscp_type as vt
 
@@ -253,7 +253,7 @@ if (len(cfgpath)):
     if 'id_dewpoint' in config['VSCP']:        
         id_dewpoint = int(config['VSCP']['id_dewpoint'])
         if bVerbose:
-            print("id_dewpoint =", id_altitude)
+            print("id_dewpoint =", id_dewpoint)
     
     # ----------------- MQTT -----------------
     if 'host' in config['MQTT']:        
@@ -438,6 +438,7 @@ j["measurement"] = {
 
 ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
 if ( len(ptopic) ):
+    print(ptopic)
     client.publish(ptopic, json.dumps(j))
 
 
@@ -679,7 +680,7 @@ ex.data[0] = sensorindex_dewpoint
 ex.data[1] = zone
 ex.data[2] = subzone
 ex.data[3] = 0  # default unit Meters
-b = altitude.encode()
+b = dew.encode()
 for idx in range(len(b)):
     ex.data[idx + 4] = b[idx]
 ex.data[4 + len(dew)] = 0  # optional terminating zero
@@ -689,7 +690,7 @@ j["vscpNote"] = note_dewpoint
 # Add extra pressure information
 j["measurement"] = { 
     "value" : float(dewpoint),
-    "unit" : 0,
+    "unit" : 1,  # unit is degrees Celsius
     "sensorindex" : sensorindex_dewpoint,
     "zone" : zone,
     "subzone" : subzone
