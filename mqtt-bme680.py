@@ -365,7 +365,7 @@ def initEvent(ex,id,vscpClass,vscpType):
     # Dumb node, priority normal
     ex.head = vscp.VSCP_PRIORITY_NORMAL | vscp.VSCP_HEADER16_DUMB
     g = vscp.guid()
-    if ("" == guid):
+    if ("" != guid):
         g.setFromString(guid)
     else :    
         g.setGUIDFromMAC(id)
