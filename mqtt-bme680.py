@@ -7,7 +7,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2000-2021 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+# Copyright © 2000-2026 Ake Hedman and contributors, [the VSCP project](https://www.vscp.org)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -343,13 +343,13 @@ def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
 
 # define connect callback
-def on_connect(client, userdata, flags, rc):
-    print("Connected =",str(rc))
+def on_connect(client, userdata, flags, reason_code, properties):
+    print("Connected =",str(reason_code))
 
-client= mqtt.Client()
+client= mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
-# bind callback function
-client.on_message=on_connect
+# bind callback functions
+client.on_connect=on_connect
 client.on_message=on_message
 
 client.username_pw_set(user, password)

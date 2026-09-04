@@ -4,3 +4,7 @@ build/
 dist/
 pyvscp_sensor_bme680.egg-info/
 pyvscp_sensors_bme680.egg-info/
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

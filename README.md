@@ -442,5 +442,5 @@ VSCP docs are collected [here](https://docs.vscp.org/).
 
 If you are interested in learning more about VSCP the main site is [here](https://www.vscp.org)
 
-Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB - MIT license.
+Copyright © 2000-2026 Ake Hedman and contributors, [the VSCP project](https://www.vscp.org) - MIT license
 
