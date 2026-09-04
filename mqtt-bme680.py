@@ -97,7 +97,8 @@ password="secret"
 #   %guid% is replaced with GUID
 #   %class% is replaced with event class
 #   %type% is replaced with event type   
-topic="vscp/{xguid}/{xclass}/{xtype}"
+#   %index% is replaced with sensor index
+topic="vscp/{xguid}/{xclass}/{xtype}/{xindex}"
 
 # Sensor index for sensors (BME680)
 # Default is to use GUID to identify sensor
@@ -436,7 +437,7 @@ j["measurement"] = {
     "subzone" : subzone
 }
 
-ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
+ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype, xindex=sensorindex_temperature)
 if ( len(ptopic) ):
     print(ptopic)
     client.publish(ptopic, json.dumps(j))
@@ -479,7 +480,7 @@ j["measurement"] = {
     "subzone" : subzone
 }
 
-ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
+ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype, xindex=sensorindex_humidity)
 if ( len(ptopic) ):
     client.publish(ptopic, json.dumps(j))
 
@@ -520,7 +521,7 @@ j["measurement"] = {
     "subzone" : subzone
 }
 
-ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
+ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype, xindex=sensorindex_pressure)
 if ( len(ptopic) ):
     client.publish(ptopic, json.dumps(j))
 
@@ -561,7 +562,7 @@ j["measurement"] = {
     "subzone" : subzone
 }
 
-ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
+ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype, xindex=sensorindex_pressure_adj)
 if ( len(ptopic) ):
     client.publish(ptopic, json.dumps(j))
 
@@ -602,7 +603,7 @@ j["measurement"] = {
     "subzone" : subzone
 }
 
-ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
+ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype, xindex=sensorindex_gas)
 if ( len(ptopic) ):
     client.publish(ptopic, json.dumps(j))
 
@@ -644,7 +645,7 @@ j["measurement"] = {
     "subzone" : subzone
 }
 
-ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
+ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype, xindex=sensorindex_altitude)
 if ( len(ptopic) ):
     client.publish(ptopic, json.dumps(j))
 
@@ -696,7 +697,7 @@ j["measurement"] = {
     "subzone" : subzone
 }
 
-ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype)
+ptopic = topic.format( xguid=g.getAsString(), xclass=ex.vscpclass, xtype=ex.vscptype, xindex=sensorindex_dewpoint)
 if ( len(ptopic) ):
     client.publish(ptopic, json.dumps(j))
 
